@@ -147,7 +147,7 @@ Object.entries(sources).forEach(([source, setters], i) => {
 describe('ETHReverseResolver', () => {
   shouldSupportInterfaces({
     contract: () => loadFixture().then((F) => F.reverseResolver),
-    interfaces: ['IERC165', 'IExtendedResolver', 'INameReverser', 'IERC7996'],
+    interfaces: ['IERC165', 'IExtendedResolver', 'INameReverser'],
   })
 
   it('coinType()', async () => {

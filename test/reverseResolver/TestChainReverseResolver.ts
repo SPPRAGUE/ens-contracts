@@ -86,7 +86,6 @@ describe('ChainReverseResolver', () => {
       'IERC165',
       'IExtendedResolver',
       'INameReverser',
-      'IERC7996',
       'IVerifiableResolver',
     ],
   })
