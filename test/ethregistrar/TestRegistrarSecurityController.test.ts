@@ -1,3 +1,4 @@
+import { shouldSupportInterfaces } from '@ensdomains/hardhat-chai-matchers-viem/behaviour'
 import hre from 'hardhat'
 import { labelhash, namehash, zeroHash } from 'viem'
 
@@ -35,6 +36,11 @@ async function fixture() {
 const loadFixture = async () => connection.networkHelpers.loadFixture(fixture)
 
 describe('RegistrarSecurityController', () => {
+  shouldSupportInterfaces({
+    contract: () => loadFixture().then((F) => F.registrarSecurityController),
+    interfaces: ['IERC165'],
+  })
+
   it('initializes registrar reference', async () => {
     const { baseRegistrar, registrarSecurityController } = await loadFixture()
     await expect(
@@ -52,8 +58,9 @@ describe('RegistrarSecurityController', () => {
       await registrarSecurityController.write.addRegistrarController([
         controller,
       ])
-      await registrarSecurityController.write.addController([
+      await registrarSecurityController.write.setController([
         securityController.address,
+        true,
       ])
 
       await expect(
@@ -77,59 +84,7 @@ describe('RegistrarSecurityController', () => {
           [accounts[1].address],
           { account: accounts[1] },
         ),
-      ).toBeRevertedWithoutReason()
-    })
-  })
-
-  describe('addController', () => {
-    it('should add controller access', async () => {
-      const { registrarSecurityController } = await loadFixture()
-      const controller = accounts[1].address
-
-      await registrarSecurityController.write.addController([controller])
-
-      await expect(
-        registrarSecurityController.read.controllers([controller]),
-      ).resolves.toEqual(true)
-    })
-
-    it('should revert when called by non-owner', async () => {
-      const { registrarSecurityController } = await loadFixture()
-      await expect(
-        registrarSecurityController.write.addController(
-          [accounts[1].address],
-          { account: accounts[1] },
-        ),
-      ).toBeRevertedWithString('Ownable: caller is not the owner')
-    })
-  })
-
-  describe('removeController', () => {
-    it('should remove controller access', async () => {
-      const { registrarSecurityController } = await loadFixture()
-      const controller = accounts[1].address
-
-      await registrarSecurityController.write.addController([controller])
-
-      await expect(
-        registrarSecurityController.read.controllers([controller]),
-      ).resolves.toEqual(true)
-
-      await registrarSecurityController.write.removeController([controller])
-
-      await expect(
-        registrarSecurityController.read.controllers([controller]),
-      ).resolves.toEqual(false)
-    })
-
-    it('should revert when called by non-owner', async () => {
-      const { registrarSecurityController } = await loadFixture()
-      await expect(
-        registrarSecurityController.write.removeController(
-          [accounts[1].address],
-          { account: accounts[1] },
-        ),
-      ).toBeRevertedWithString('Ownable: caller is not the owner')
+      ).toBeRevertedWithString('Controllable: Caller is not a controller')
     })
   })
 
@@ -233,21 +188,4 @@ describe('RegistrarSecurityController', () => {
     })
   })
 
-  describe('supportsInterface', () => {
-    it('should support ERC165', async () => {
-      const { registrarSecurityController } = await loadFixture()
-
-      await expect(
-        registrarSecurityController.read.supportsInterface(['0x01ffc9a7']),
-      ).resolves.toEqual(true)
-    })
-
-    it('should return false for unknown interface', async () => {
-      const { registrarSecurityController } = await loadFixture()
-
-      await expect(
-        registrarSecurityController.read.supportsInterface(['0xffffffff']),
-      ).resolves.toEqual(false)
-    })
-  })
 })

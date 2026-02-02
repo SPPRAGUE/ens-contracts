@@ -1,3 +1,4 @@
+import { shouldSupportInterfaces } from '@ensdomains/hardhat-chai-matchers-viem/behaviour'
 import hre from 'hardhat'
 import { labelhash, namehash, zeroAddress, zeroHash } from 'viem'
 
@@ -25,6 +26,11 @@ async function fixture() {
 const loadFixture = async () => connection.networkHelpers.loadFixture(fixture)
 
 describe('RootSecurityController', () => {
+  shouldSupportInterfaces({
+    contract: () => loadFixture().then((F) => F.rootSecurityController),
+    interfaces: ['IERC165'],
+  })
+
   it('initializes root and ens references', async () => {
     const { ensRegistry, root, rootSecurityController } = await loadFixture()
 
@@ -66,21 +72,4 @@ describe('RootSecurityController', () => {
     })
   })
 
-  describe('supportsInterface', () => {
-    it('should support ERC165', async () => {
-      const { rootSecurityController } = await loadFixture()
-
-      await expect(
-        rootSecurityController.read.supportsInterface(['0x01ffc9a7']),
-      ).resolves.toEqual(true)
-    })
-
-    it('should return false for unknown interface', async () => {
-      const { rootSecurityController } = await loadFixture()
-
-      await expect(
-        rootSecurityController.read.supportsInterface(['0xffffffff']),
-      ).resolves.toEqual(false)
-    })
-  })
 })
